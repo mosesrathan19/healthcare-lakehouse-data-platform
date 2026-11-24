@@ -40,6 +40,16 @@ def healthcare_phase4():
         append_env=True,
         env={"SPARK_LOCAL_IP": "127.0.0.1"},
     )
-    generate >> build >> check
+    monitor = BashOperator(
+        task_id="record_monitoring_metrics",
+        bash_command=(
+            f"cd {ROOT} && python -m src.observability "
+            f"--output-dir {OUTPUT} --stage validate "
+            f"--max-seconds 600 --max-reject-fraction 0"
+        ),
+        append_env=True,
+        env={"SPARK_LOCAL_IP": "127.0.0.1"},
+    )
+    generate >> build >> check >> monitor
 
 healthcare_phase4()
