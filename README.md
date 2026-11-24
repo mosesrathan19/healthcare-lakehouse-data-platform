@@ -89,6 +89,18 @@ The **medium 1M benchmark has now been executed on Google Colab** (Spark 3.5.10,
 
 **[Read the full measured results and methodology](docs/PHASE3_MEASURED_RESULTS_2026-11-24.md)**.
 
+## Phase 4 — Advanced Data Quality + Airflow Orchestration
+
+**[Open the Phase 4 Google Colab notebook](https://colab.research.google.com/github/mosesrathan19/healthcare-lakehouse-data-platform/blob/main/notebooks/04_data_quality_colab.ipynb)** · **[MacBook Airflow setup and full runbook](docs/PHASE4_QUALITY_AIRFLOW.md)**
+
+This phase adds independent, **fail-closed** data-quality checks and an Airflow 3 DAG. The quality framework validates required schemas, null/duplicate primary keys, cross-table foreign keys, claim amounts and statuses, dates, accepted/rejected reconciliation, rejection thresholds, and Gold-vs-Silver totals. Every stage emits a structured JSON status/duration report. A failed gate makes the validation task fail.
+
+- **Colab:** run the notebook to generate synthetic Bronze, build Silver/Gold, inspect monitoring reports, and inject invalid test data to demonstrate a failure.
+- **MacBook:** use `airflow/compose.yaml` and `airflow/Dockerfile` with Docker Desktop, then manually trigger the DAG `healthcare_phase4_quality_pipeline` at `http://localhost:8080`.
+- **Tests:** `pytest -q tests/test_data_quality.py` includes passing and intentionally failing cases.
+
+The DAG is intentionally manual because the synthetic source is static. Airflow, alerting, and remote durable metrics infrastructure are **not yet deployed**; see the runbook for security and runtime limitations.
+
 ## Validation
 
 The pipeline checks duplicate/null primary keys, encounter/claim foreign keys, complete accepted/rejected reconciliation and Gold/Silver count consistency.
@@ -100,7 +112,7 @@ See [data model](docs/DATA_MODEL.md). A [sample Airflow DAG](airflow/dags/health
 1. **Starter in this repository:** batch synthetic data generation and Bronze/Silver/Gold Parquet
 2. **Implemented demo:** simulated claims CDC, event deduplication, version-guarded upserts/deletes and replay checks
 3. **Implemented demo:** Delta Lake transactional MERGE; production-grade CDC offsets, durable tombstones and multi-batch replay remain planned
-4. **Planned:** production orchestration, observability, alerting
+4. **Implemented educational Phase 4:** reusable quality gates, structured JSON monitoring, Airflow DAG + Docker setup; execution/deployment and production monitoring are pending
 5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. AWS S3 and Databricks/Unity Catalog deployment remain planned
 
 This project is a learning implementation, not a real EHR integration or HIPAA-certified deployment.
