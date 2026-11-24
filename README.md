@@ -2,7 +2,7 @@
 
 A **synthetic-data-only** PySpark portfolio project illustrating Bronze/Silver/Gold data layers, referential integrity, quarantined records and healthcare claims analytics.
 
-> Status: starter implementation. The 1M/10M scale options are configurations. A reproducible 1M benchmark is included, but **no performance results are claimed until it is executed**. No PHI or real medical records are included.
+> Status: starter implementation. The 1M/10M scale options are configurations. The **1M benchmark has been executed on Google Colab**, with measured results documented below; 10M remains unbenchmarked. No PHI or real medical records are included.
 
 ## Architecture
 
@@ -69,7 +69,7 @@ This phase builds on the original **10K-claim demo** and demonstrates a version-
 
 **[Run the Phase 3 Colab notebook](https://colab.research.google.com/github/mosesrathan19/healthcare-lakehouse-data-platform/blob/main/notebooks/03_one_million_benchmark_colab.ipynb)** · [Full benchmark methodology](docs/PHASE3_BENCHMARK.md)
 
-The benchmark executes the **existing generator and Bronze → Silver → Gold pipeline**, then compares 4, 8 and 16 partitions on the same one-million-claim analytics workload. Measurements include time in seconds, rows/sec, output Parquet file counts/sizes, environment metadata and complete row/amount reconciliation. It saves actual measurements locally as `benchmark_results.json`; no unmeasured performance numbers are claimed.
+The benchmark executes the **existing generator and Bronze → Silver → Gold pipeline**, then compares 4, 8 and 16 partitions on the same one-million-claim analytics workload. Measurements include time in seconds, rows/sec, output Parquet file counts/sizes, environment metadata and complete row/amount reconciliation. It saves actual measurements locally as `benchmark_results.json`; measured results from one Colab run are documented below; repeat trials for stronger performance conclusions.
 
 ```bash
 python -m src.benchmark --scale demo --output-dir outputs/benchmark_demo --partitions 4,8,16
@@ -77,6 +77,17 @@ python -m src.benchmark --scale medium --output-dir outputs/benchmark_1m --parti
 ```
 
 For Colab, start with the demo-scale smoke test, then run medium (1M encounters and 1M claims). The 10M configuration is still not benchmarked. Timings are **single-runtime Colab/laptop measurements**, not evidence of multi-node production scale.
+
+## Verified Phase 3 benchmark results — November 24, 2026
+
+The **medium 1M benchmark has now been executed on Google Colab** (Spark 3.5.10, Python 3.13.18, 2 CPUs, local Spark).
+
+- **1,000,000 encounters and 1,000,000 claims** processed with **0 rejected** records.
+- **22.739 seconds** for synthetic data generation and **64.555 seconds** for Bronze → Silver → Gold processing; **87.294 seconds total** (excluding environment setup).
+- Partition experiment (same 1M-claim aggregation and Parquet read/write/reconciliation): **4 partitions: 1.873 s**, **8 partitions: 1.675 s**, **16 partitions: 2.281 s**.
+- **8 partitions were fastest in this single run**; all trials reconciled exactly 1M claims and billed amounts. Results are not evidence of multi-node scaling.
+
+**[Read the full measured results and methodology](docs/PHASE3_MEASURED_RESULTS_2026-11-24.md)**.
 
 ## Validation
 
@@ -90,6 +101,6 @@ See [data model](docs/DATA_MODEL.md). A [sample Airflow DAG](airflow/dags/health
 2. **Implemented demo:** simulated claims CDC, event deduplication, version-guarded upserts/deletes and replay checks
 3. **Implemented demo:** Delta Lake transactional MERGE; production-grade CDC offsets, durable tombstones and multi-batch replay remain planned
 4. **Planned:** production orchestration, observability, alerting
-5. **Implemented benchmark code:** 1M encounter/claim performance measurement and partition comparisons; actual timed run is pending. AWS S3 and Databricks/Unity Catalog deployment remain planned
+5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. AWS S3 and Databricks/Unity Catalog deployment remain planned
 
 This project is a learning implementation, not a real EHR integration or HIPAA-certified deployment.
