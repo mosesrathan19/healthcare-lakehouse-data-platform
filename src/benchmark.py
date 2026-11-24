@@ -69,7 +69,7 @@ def benchmark(spark, root: Path, scale: str, partitions: list[int]) -> dict:
         def job():
             grouped = (
                 silver_claims.repartition(count, "service_date")
-                .groupBy("service_date", "claim_status")
+                .groupBy("service_date")
                 .agg(F.count("*").alias("claim_count"),
                      F.sum("billed_cents").alias("billed_cents"))
             )
@@ -131,7 +131,7 @@ def benchmark(spark, root: Path, scale: str, partitions: list[int]) -> dict:
             "gold": {"parquet_files": gold_count, "bytes": gold_bytes},
         },
         "partition_comparison": {
-            "workload": "read Silver claims; repartition by service_date; group by service_date and claim_status; write Parquet; read back and reconcile",
+            "workload": "read Silver claims; repartition by service_date; group by service_date; write Parquet; read back and reconcile",
             "expected_claims": expected_count,
             "expected_billed_cents": expected_cents,
             "trials": trials,
