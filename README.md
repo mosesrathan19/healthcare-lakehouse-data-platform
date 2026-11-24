@@ -113,9 +113,9 @@ A screenshot captured from the local Airflow UI confirms a **successful manual r
 | `record_monitoring_metrics` | 0.097 s | Success |
 | **Overall DAG duration** | **29.136 s** | **Success** |
 
-The screenshot was captured locally; it must still be uploaded as `docs/images/airflow-success.png` to make the evidence image visible in this GitHub repository. After uploading, uncomment the following README line:
+The screenshot below shows the successful Airflow run on November 24, 2026.
 
-<!-- ![Successful four-task Airflow DAG run](docs/images/airflow-success.png) -->
+![Successful four-task Airflow DAG run](airflow-success.png)
 
 ## Phase 5 — AWS S3 + Databricks Cloud Lakehouse (opt-in code)
 
