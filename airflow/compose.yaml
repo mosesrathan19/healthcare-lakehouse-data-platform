@@ -1,0 +1,23 @@
+# Local development only. Airflow standalone uses SQLite and local executor.
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: airflow standalone
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      AIRFLOW_HOME: /opt/airflow
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/project/airflow/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      PYTHONPATH: /opt/project
+      SPARK_LOCAL_IP: "127.0.0.1"
+    working_dir: /opt/project
+    volumes:
+      - ../:/opt/project
+      - airflow_state:/opt/airflow
+    restart: "no"
+
+volumes:
+  airflow_state:
