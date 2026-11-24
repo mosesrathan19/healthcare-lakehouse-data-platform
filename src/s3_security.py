@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from botocore.exceptions import ClientError
 
 REQUIRED_BLOCKS = ("BlockPublicAcls", "IgnorePublicAcls",
                    "BlockPublicPolicy", "RestrictPublicBuckets")
@@ -15,7 +14,6 @@ REQUIRED_BLOCKS = ("BlockPublicAcls", "IgnorePublicAcls",
 
 def assess_bucket(client, bucket: str, *, sts_client=None) -> dict:
     """Inspect an existing bucket. Only GET/HEAD API calls are made."""
-    from src.s3_upload import plan_upload
     # Validate name without requiring any local Parquet data.
     import re
     if not re.fullmatch(r"[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]", bucket) or ".." in bucket:
