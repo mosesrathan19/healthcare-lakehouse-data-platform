@@ -111,7 +111,7 @@ Phase 5 adds two deliberately separate cloud paths:
 - **AWS S3:** `src/s3_upload.py` previews the local Parquet files to be uploaded to a **preexisting private bucket**, without credentials or network calls. Upload requires `--execute`, and the default size cap is 100 MiB. S3 storage/requests/transfers may be charged, and connection from Databricks to S3 additionally requires an IAM role and Unity Catalog external location.
 - **Tests:** `pytest -q tests/test_phase5_cloud.py` covers cloud naming, scale limitations, dry-run behavior, upload opt-in with mocked client, and unsafe/oversized S3 manifests.
 
-**Execution status:** Code and guidance committed; neither AWS resources nor paid Databricks jobs have been provisioned, and live cloud execution remains to be validated by the user. Databricks Free Edition is the recommended first step; see the runbook for cost controls, limitations and cleanup.
+**Verified Databricks execution (November 24, 2026):** The user ran the 10K synthetic-claim managed Delta pipeline successfully in **44.955 seconds**, creating **9 Unity Catalog managed Delta tables** under `workspace.healthcare_phase5_demo`. The run returned **PASS**, **10,000 claims** and **999,750,000 billed cents**; Gold query, Delta detail and Delta history checks all succeeded. [Measured cloud results](docs/PHASE5_MEASURED_DATABRICKS_RESULTS_2026-11-24.md). **AWS S3 remains optional and unexecuted**; no separate paid Databricks job has been verified. See the runbook for cost controls and cleanup.
 
 ## Validation
 
@@ -125,6 +125,6 @@ See [data model](docs/DATA_MODEL.md). A [sample Airflow DAG](airflow/dags/health
 2. **Implemented demo:** simulated claims CDC, event deduplication, version-guarded upserts/deletes and replay checks
 3. **Implemented demo:** Delta Lake transactional MERGE; production-grade CDC offsets, durable tombstones and multi-batch replay remain planned
 4. **Executed Phase 4 locally:** reusable quality gates, structured JSON monitoring, three-task Airflow DAG; production monitoring remains planned
-5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. Phase 5 S3/Databricks implementation is committed; opt-in cloud execution remains pending
+5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. Phase 5 managed Delta demo executed successfully on Databricks (10K claims, 44.955s); optional AWS S3 integration remains pending
 
 This project is a learning implementation, not a real EHR integration or HIPAA-certified deployment.
