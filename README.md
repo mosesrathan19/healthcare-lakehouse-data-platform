@@ -101,6 +101,22 @@ This phase adds independent, **fail-closed** data-quality checks and an Airflow 
 
 The DAG is intentionally manual because the synthetic source is static. The three-task Airflow pipeline has been executed successfully on the user's MacBook; cloud alerting and durable remote metrics remain **not deployed**.
 
+### Verified Airflow execution evidence — November 24, 2026
+
+A screenshot captured from the local Airflow UI confirms a **successful manual run** of `healthcare_phase4_quality_pipeline` (DAG version `v2`) with **all four tasks green**:
+
+| Task | Observed duration | Result |
+|---|---:|---|
+| `generate_synthetic_bronze` | 8.408 s | Success |
+| `build_silver_and_gold` | 10.722 s | Success |
+| `run_quality_gates` | 7.353 s | Success |
+| `record_monitoring_metrics` | 0.097 s | Success |
+| **Overall DAG duration** | **29.136 s** | **Success** |
+
+The screenshot was captured locally; it must still be uploaded as `docs/images/airflow-success.png` to make the evidence image visible in this GitHub repository. After uploading, uncomment the following README line:
+
+<!-- ![Successful four-task Airflow DAG run](docs/images/airflow-success.png) -->
+
 ## Phase 5 — AWS S3 + Databricks Cloud Lakehouse (opt-in code)
 
 **[Phase 5 deployment runbook and cost precautions](docs/PHASE5_CLOUD_DEPLOYMENT.md)** · **[Databricks managed Delta notebook](notebooks/05_databricks_managed_delta.ipynb)**
