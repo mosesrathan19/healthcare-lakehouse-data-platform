@@ -113,6 +113,18 @@ Phase 5 adds two deliberately separate cloud paths:
 
 **Verified Databricks execution (November 24, 2026):** The user ran the 10K synthetic-claim managed Delta pipeline successfully in **44.955 seconds**, creating **9 Unity Catalog managed Delta tables** under `workspace.healthcare_phase5_demo`. The run returned **PASS**, **10,000 claims** and **999,750,000 billed cents**; Gold query, Delta detail and Delta history checks all succeeded. [Measured cloud results](docs/PHASE5_MEASURED_DATABRICKS_RESULTS_2026-11-24.md). **AWS S3 remains optional and unexecuted**; no separate paid Databricks job has been verified. See the runbook for cost controls and cleanup.
 
+## Optional AWS S3, security and operational monitoring
+
+**[S3 + Security + Monitoring guide](docs/S3_SECURITY_MONITORING.md)**
+
+- **S3 uploader:** `src/s3_upload.py` previews local Bronze/Silver/Gold Parquet without network access; `--execute` is required to upload to an existing AWS bucket.
+- **S3 security preflight:** `src/s3_security.py` checks bucket public-access blocks, encryption, versioning and accessibility with **read-only AWS calls**, only when `--execute` is explicitly supplied. Unknown findings are not treated as secure.
+- **Monitoring:** `src/observability.py` appends sanitized, non-PHI JSONL events and checks status, run duration, and rejection thresholds.
+- **Airflow:** the Phase 4 DAG now adds a fourth monitoring task after its three previously verified tasks; the **updated four-task DAG still needs a new local run**.
+- **Tests:** `pytest -q tests/test_security_observability.py` covers mocked security settings, failure/unknown handling, metric whitelisting, and threshold breaches without AWS credentials.
+
+**Deployment status:** The Databricks managed Delta demo was executed successfully. The AWS S3 upload and external-location configuration have **not** been executed, and production-grade security/monitoring controls are not deployed. See the guide for billing precautions and the outstanding controls.
+
 ## Validation
 
 The pipeline checks duplicate/null primary keys, encounter/claim foreign keys, complete accepted/rejected reconciliation and Gold/Silver count consistency.
@@ -124,7 +136,7 @@ See [data model](docs/DATA_MODEL.md). A [sample Airflow DAG](airflow/dags/health
 1. **Starter in this repository:** batch synthetic data generation and Bronze/Silver/Gold Parquet
 2. **Implemented demo:** simulated claims CDC, event deduplication, version-guarded upserts/deletes and replay checks
 3. **Implemented demo:** Delta Lake transactional MERGE; production-grade CDC offsets, durable tombstones and multi-batch replay remain planned
-4. **Executed Phase 4 locally:** reusable quality gates, structured JSON monitoring, three-task Airflow DAG; production monitoring remains planned
-5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. Phase 5 managed Delta demo executed successfully on Databricks (10K claims, 44.955s); optional AWS S3 integration remains pending
+4. **Executed Phase 4 locally:** reusable quality gates and three-task Airflow DAG; an additional sanitized monitoring task is committed but not yet rerun
+5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. Phase 5 managed Delta demo executed successfully on Databricks (10K claims, 44.955s); optional AWS S3 integration remains unexecuted, with preflight and monitoring code added
 
 This project is a learning implementation, not a real EHR integration or HIPAA-certified deployment.
