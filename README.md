@@ -45,6 +45,26 @@ pytest -q
 !python -m src.cli --scale demo --output-dir outputs/demo
 ```
 
+## Phase 2 — Simulated CDC and Delta Lake MERGE
+
+**[Run Phase 2 in Google Colab](https://colab.research.google.com/github/mosesrathan19/healthcare-lakehouse-data-platform/blob/main/notebooks/02_delta_cdc_colab.ipynb)**
+
+This phase builds on the original **10K-claim demo** and demonstrates a version-aware, transactional Delta MERGE against the healthcare claims table.
+
+| CDC operation | Events | Expected outcome |
+|---|---:|---|
+| Insert new claims | 100 | +100 claims |
+| Update existing claims | 20 | Change billed values |
+| Delete existing claims | 5 | −5 claims |
+| Older duplicate updates | 5 | Discard older versions |
+| **All events** | **130** | **10,095 current claims** |
+
+**What's implemented:** deterministic fabricated CDC events from immutable Bronze data, latest-event selection, rejection of same-key/same-timestamp collisions, Delta MERGE, event-version guards, replay checks, foreign-key validation, and refreshed Gold claims-by-status Parquet reporting. Original batch Parquet layers are unchanged.
+
+**Run locally:** install Delta separately with `pip install "delta-spark>=3.3,<3.4"` (requires compatible Spark 3.5.x), start a **Delta-enabled SparkSession** following the notebook, run the original demo and then `src.delta_cdc.run(spark, output_dir)`. Run event tests with `pytest -q tests/test_delta_cdc.py`; opt in to the slower end-to-end Delta test with `RUN_DELTA_INTEGRATION=1 pytest -q tests/test_delta_cdc.py`. For Colab, use a fresh session before starting Delta.
+
+**Limitations:** The feed is simulated rather than streamed from a live EHR or claims database. The state table stores a per-row version for existing claims, but delete tombstones and source offsets are **not persisted across batches**; a future older insert can therefore resurrect a deleted claim if incorrectly ingested. The demo is sequential and requires additional controls for concurrent writers, source delivery guarantees, auditability, schema evolution and production compliance.
+
 ## Validation
 
 The pipeline checks duplicate/null primary keys, encounter/claim foreign keys, complete accepted/rejected reconciliation and Gold/Silver count consistency.
@@ -54,8 +74,8 @@ See [data model](docs/DATA_MODEL.md). A [sample Airflow DAG](airflow/dags/health
 ## Roadmap
 
 1. **Starter in this repository:** batch synthetic data generation and Bronze/Silver/Gold Parquet
-2. **Planned:** CDC, late-arriving data, incremental state and replay
-3. **Planned:** Delta Lake or Iceberg MERGE transactions
+2. **Implemented demo:** simulated claims CDC, event deduplication, version-guarded upserts/deletes and replay checks
+3. **Implemented demo:** Delta Lake transactional MERGE; production-grade CDC offsets, durable tombstones and multi-batch replay remain planned
 4. **Planned:** production orchestration, observability, alerting
 5. **Planned:** AWS S3, Databricks/Unity Catalog, performance benchmarks
 
