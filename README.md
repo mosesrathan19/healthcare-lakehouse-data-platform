@@ -99,7 +99,19 @@ This phase adds independent, **fail-closed** data-quality checks and an Airflow 
 - **MacBook:** use `airflow/compose.yaml` and `airflow/Dockerfile` with Docker Desktop, then manually trigger the DAG `healthcare_phase4_quality_pipeline` at `http://localhost:8080`.
 - **Tests:** `pytest -q tests/test_data_quality.py` includes passing and intentionally failing cases.
 
-The DAG is intentionally manual because the synthetic source is static. Airflow, alerting, and remote durable metrics infrastructure are **not yet deployed**; see the runbook for security and runtime limitations.
+The DAG is intentionally manual because the synthetic source is static. The three-task Airflow pipeline has been executed successfully on the user's MacBook; cloud alerting and durable remote metrics remain **not deployed**.
+
+## Phase 5 — AWS S3 + Databricks Cloud Lakehouse (opt-in code)
+
+**[Phase 5 deployment runbook and cost precautions](docs/PHASE5_CLOUD_DEPLOYMENT.md)** · **[Databricks managed Delta notebook](notebooks/05_databricks_managed_delta.ipynb)**
+
+Phase 5 adds two deliberately separate cloud paths:
+
+- **Databricks managed Delta:** `src/cloud_pipeline.py` generates synthetic data and creates nine Unity Catalog **managed Delta** Bronze/Silver/Gold tables, with claim-count and billed-amount reconciliation. The notebook starts with `EXECUTE_CLOUD_WRITE=False`, so preview mode performs no writes. A 10K-claim demo is recommended before optional 1M.
+- **AWS S3:** `src/s3_upload.py` previews the local Parquet files to be uploaded to a **preexisting private bucket**, without credentials or network calls. Upload requires `--execute`, and the default size cap is 100 MiB. S3 storage/requests/transfers may be charged, and connection from Databricks to S3 additionally requires an IAM role and Unity Catalog external location.
+- **Tests:** `pytest -q tests/test_phase5_cloud.py` covers cloud naming, scale limitations, dry-run behavior, upload opt-in with mocked client, and unsafe/oversized S3 manifests.
+
+**Execution status:** Code and guidance committed; neither AWS resources nor paid Databricks jobs have been provisioned, and live cloud execution remains to be validated by the user. Databricks Free Edition is the recommended first step; see the runbook for cost controls, limitations and cleanup.
 
 ## Validation
 
@@ -112,7 +124,7 @@ See [data model](docs/DATA_MODEL.md). A [sample Airflow DAG](airflow/dags/health
 1. **Starter in this repository:** batch synthetic data generation and Bronze/Silver/Gold Parquet
 2. **Implemented demo:** simulated claims CDC, event deduplication, version-guarded upserts/deletes and replay checks
 3. **Implemented demo:** Delta Lake transactional MERGE; production-grade CDC offsets, durable tombstones and multi-batch replay remain planned
-4. **Implemented educational Phase 4:** reusable quality gates, structured JSON monitoring, Airflow DAG + Docker setup; execution/deployment and production monitoring are pending
-5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. AWS S3 and Databricks/Unity Catalog deployment remain planned
+4. **Executed Phase 4 locally:** reusable quality gates, structured JSON monitoring, three-task Airflow DAG; production monitoring remains planned
+5. **Executed on Colab:** 1M encounter/claim performance measurement and partition comparisons; repeat trials and 10M remain pending. Phase 5 S3/Databricks implementation is committed; opt-in cloud execution remains pending
 
 This project is a learning implementation, not a real EHR integration or HIPAA-certified deployment.
